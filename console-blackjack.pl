@@ -48,16 +48,19 @@ sub is_ten {
   $card->{value} > 8;
 }
 
-sub player_get_value {
-  my ($player_hand, $method) = @_;
+sub dealer_hand_value {
+  my ($dealer_hand, $method) = @_;
 
-  my $v = 0;
   my $total = 0;
-  my $tmp_v = 0;
 
-  for (@{$player_hand->{hand}}) {
-    $tmp_v = $_->{value} + 1;
-    $v = $tmp_v > 9 ? 10 : $tmp_v;
+  for my $i (0 .. scalar(@{$dealer_hand->{cards}}) - 1) {
+
+    if ($i == 1 && $dealer_hand->{hide_down_card}) {
+      next;
+    }
+
+    my $tmp_v = @{$dealer_hand->{cards}}[$i]->{value} + 1;
+    my $v = $tmp_v > 9 ? 10 : $tmp_v;
 
     if ($method eq SOFT && $v == 1 && $total < 11) {
       $v = 11;
@@ -67,7 +70,29 @@ sub player_get_value {
   }
 
   if ($method eq SOFT && $total > 21) {
-    return player_get_value($player_hand, HARD);
+    return dealer_hand_value($dealer_hand, HARD);
+  }
+
+  $total;
+}
+
+sub player_hand_value {
+  my ($cards, $method) = @_;
+  my $total = 0;
+
+  for (@{$cards}) {
+    my $tmp_v = $_->{value} + 1;
+    my $v = $tmp_v > 9 ? 10 : $tmp_v;
+
+    if ($method eq SOFT && $v == 1 && $total < 11) {
+      $v = 11;
+    }
+
+    $total += $v;
+  }
+
+  if ($method eq SOFT && $total > 21) {
+    return player_hand_value($cards, HARD);
   }
 
   $total;
@@ -76,21 +101,21 @@ sub player_get_value {
 sub player_is_busted {
   my ($player_hand) = @_;
 
-  player_get_value($player_hand, SOFT) > 21 ? 1 : 0;
+  player_hand_value($player_hand, SOFT) > 21 ? 1 : 0;
 }
 
 sub is_blackjack {
-  my ($hand) = @_;
+  my ($cards) = @_;
 
-  if (scalar @$hand != 2) {
+  if (scalar @$cards != 2) {
     return 0;
   }
 
-  if (is_ace(@$hand[0]) && is_ten(@$hand[1])) {
+  if (is_ace(@$cards[0]) && is_ten(@$cards[1])) {
     return 1;
   }
 
-  is_ace(@$hand[1]) && is_ten(@$hand[0]) ? 1 : 0;
+  is_ace(@$cards[1]) && is_ten(@$cards[0]) ? 1 : 0;
 }
 
 sub player_can_hit {
@@ -98,8 +123,8 @@ sub player_can_hit {
 
   ($player_hand->{played}
     || $player_hand->{stood}
-    || 21 == player_get_value($player_hand, HARD)
-    || is_blackjack($player_hand->{hand})
+    || 21 == player_hand_value($player_hand, HARD)
+    || is_blackjack($player_hand->{cards})
     || player_is_busted($player_hand)) ? 0 : 1;
 }
 
@@ -146,10 +171,56 @@ sub new_regular {
   shuffle(\$game->{shoe});
 }
 
+sub need_to_shuffle {
+  my ($game) = @_;
+
+  1; # TODO
+}
+
+sub deal_card {
+  my ($shoe, $cards) = @_;
+
+  my $card = pop(@{$shoe});
+  push @{$cards}, $card;
+}
+
 sub deal_new_hand {
   my ($game) = @_;
 
-  print Dumper($game);
+  if (need_to_shuffle($game)) {
+    new_regular($game);
+  }
+
+  my %player_hand = (cards => [], bet => $game->{current_bet}, stood => 0, played => 0, payed => 0, status => 0);
+  my %dealer_hand = (cards => [], hide_down_card => 1);
+
+  deal_card($game->{shoe}, (\%player_hand)->{cards});
+  deal_card($game->{shoe}, (\%dealer_hand)->{cards});
+  deal_card($game->{shoe}, (\%player_hand)->{cards});
+  deal_card($game->{shoe}, (\%dealer_hand)->{cards});
+
+  $game->{player_hands}[0] = \%player_hand;
+  $game->{current_player_hand} = 0;
+
+  $game->{dealer_hand} = \%dealer_hand;
+
+  # if (dealer_upcard_is_ace(dealer_hand) && !is_blackjack(&player_hand.hand)) {
+  #   draw_hands(game);
+  #   ask_insurance(game);
+  #   return;
+  # }
+  #
+  # if (player_is_done(game, &player_hand)) {
+  #   dealer_hand->hide_down_card = false;
+  #   pay_hands(game);
+  #   draw_hands(game);
+  #   bet_options(game);
+  #   return;
+  # }
+  #
+  # draw_hands(game);
+  # player_get_action(game);
+  # save_game(game);
 }
 
 my %game = (
