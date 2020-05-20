@@ -4,10 +4,15 @@ use v5.10;
 use strict;
 use warnings FATAL => 'all';
 use Data::Dumper;
+use Carp 'verbose';
+$SIG{ __DIE__ } = sub { Carp::confess( @_ ) };
 
 use constant {
-  HARD => 'hard',
-  SOFT => 'soft'
+  HARD => 0,
+  SOFT => 1,
+  WON  => 2,
+  LOST => 3,
+  PUSH => 4
 };
 
 my @shuffle_specs = (
@@ -184,6 +189,92 @@ sub deal_card {
   push @{$cards}, $card;
 }
 
+sub dealer_upcard_is_ace {
+  my ($dealer_hand) = @_;
+
+  is_ace($dealer_hand->{cards}[0]);
+}
+
+sub clear {
+  # system("export TERM=linux; clear");
+}
+
+sub draw_dealer_hand {
+  my ($game) = @_;
+  my $dealer_hand = $game->{dealer_hand};
+
+  printf(" ");
+
+  for (my $i = 0; $i < scalar(@{$dealer_hand->{cards}}); ++$i) {
+    if ($i == 1 && $dealer_hand->{hide_down_card}) {
+      printf("%s ", $game->{faces}[13][0]);
+    } else {
+      my $card = $dealer_hand->{cards}[$i];
+
+      printf("%s ", $game->{faces}[$card->{value}][$card->{suit}]);
+    }
+  }
+
+  printf(" ⇒  %u", dealer_hand_value($dealer_hand, SOFT));
+}
+
+sub draw_player_hand {
+  my ($game, $index) = @_;
+  my $player_hand = $game->{player_hands}[$index];
+
+  printf(" ");
+
+  for (my $i = 0; $i < scalar(@{$player_hand->{cards}}); ++$i) {
+    my $card = $player_hand->{cards}[$i];
+    printf("%s ", $game->{faces}[$card->{value}][$card->{suit}]);
+  }
+
+  printf(" ⇒  %u  ", player_hand_value($player_hand->{cards}, SOFT));
+
+  if ($player_hand->{status} == LOST) {
+    printf("-");
+  } elsif ($player_hand->{status} == WON) {
+    printf("+");
+  }
+
+  printf("\$%.2f", $player_hand->{bet} / 100.0);
+
+  if (!$player_hand->{played} && $index == $game->{current_player_hand}) {
+    printf(" ⇐");
+  }
+
+  printf("  ");
+
+  if ($player_hand->{status} == LOST) {
+    printf(player_is_busted($player_hand) ? "Busted!" : "Lose!");
+  } elsif ($player_hand->{status} == WON) {
+    printf(is_blackjack(&$player_hand->{hand}) ? "Blackjack!" : "Won!");
+  } elsif ($player_hand->{status} == PUSH) {
+    printf("Push");
+  }
+
+  printf("\n\n");
+}
+
+sub draw_hands {
+  my ($game) = @_;
+
+  clear();
+  printf("\n Dealer: \n");
+  draw_dealer_hand($game);
+  printf("\n\n Player \$%.2f:\n", $game->{money} / 100.0);
+
+  for (my $x = 0; $x < scalar(@{$game->{player_hands}}); $x++) {
+    draw_player_hand($game, $x);
+  }
+}
+
+sub ask_insurance {
+  my ($game) = @_;
+
+
+}
+
 sub deal_new_hand {
   my ($game) = @_;
 
@@ -204,12 +295,14 @@ sub deal_new_hand {
 
   $game->{dealer_hand} = \%dealer_hand;
 
-  # if (dealer_upcard_is_ace(dealer_hand) && !is_blackjack(&player_hand.hand)) {
-  #   draw_hands(game);
-  #   ask_insurance(game);
+  draw_hands($game);
+
+  # if (dealer_upcard_is_ace(\%dealer_hand) && !is_blackjack(\$player_hand{cards})) {
+  #   draw_hands($game);
+  #   ask_insurance($game);
   #   return;
   # }
-  #
+
   # if (player_is_done(game, &player_hand)) {
   #   dealer_hand->hide_down_card = false;
   #   pay_hands(game);
@@ -235,5 +328,4 @@ my %game = (
   faces => [@faces]
 );
 
-new_regular(\%game);
 deal_new_hand(\%game);
