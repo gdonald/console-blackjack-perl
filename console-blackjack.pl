@@ -3,9 +3,14 @@
 use v5.10;
 use strict;
 use warnings FATAL => 'all';
+
+use diagnostics;
 use Data::Dumper;
 use Carp 'verbose';
 $SIG{ __DIE__ } = sub { Carp::confess( @_ ) };
+
+use utf8;
+use open ':std', ':encoding(UTF-8)';
 
 use constant {
   HARD => 0,
@@ -269,10 +274,130 @@ sub draw_hands {
   }
 }
 
+sub read_one_char {
+  open(TTY, "+</dev/tty") or die "no tty: $!";
+  system "stty raw -echo min 1 time 1";
+  my $c = utf8::decode(getc(TTY));
+  system "stty sane";
+  $c;
+}
+
+sub need_to_play_dealer_hand {
+  my ($game) = @_;
+
+  for (my $x = 0; $x < $game->{total_player_hands}; ++$x) {
+    my $player_hand = $game->{player_hands}[$x];
+
+    if (!(player_is_busted($player_hand) || is_blackjack($player_hand->{cards}))) {
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+sub play_dealer_hand {
+  my ($game) = @_;
+
+  my $dealer_hand = $game->{dealer_hand};
+
+  if (is_blackjack($dealer_hand->{cards})) {
+    $dealer_hand->{hide_down_card} = 0;
+  }
+
+  if (!need_to_play_dealer_hand($game)) {
+    pay_hands($game);
+    return;
+  }
+
+  $dealer_hand->{hide_down_card} = 0;
+
+  my $soft_count = dealer_hand_value($dealer_hand, SOFT);
+  my $hard_count = dealer_hand_value($dealer_hand, HARD);
+
+  while ($soft_count < 18 && $hard_count < 17) {
+    deal_card($game->{shoe}, $dealer_hand->{cards});
+    $soft_count = dealer_hand_value($dealer_hand, SOFT);
+    $hard_count = dealer_hand_value($dealer_hand, HARD);
+  }
+
+  pay_hands($game);
+}
+
+sub no_insurance {
+  my ($game) = @_;
+
+  if (is_blackjack($game->{dealer_hand}->{cards})) {
+    $game->{dealer_hand}->{hide_down_card} = 0;
+
+    pay_hands($game);
+    draw_hands($game);
+    bet_options($game);
+    return;
+  }
+
+  my $player_hand = $game->{player_hands}[$game->{current_player_hand}];
+
+  if (player_is_done($game, $player_hand)) {
+    play_dealer_hand($game);
+    draw_hands($game);
+    bet_options($game);
+    return;
+  }
+
+  draw_hands($game);
+  player_get_action($game);
+}
+
+sub insure_hand {
+  my ($game) = @_;
+
+}
+
+sub player_is_done {
+  my ($game, $player_hand) = @_;
+
+
+}
+
+sub pay_hands {
+  my ($game) = @_;
+
+}
+
+sub bet_options {
+  my ($game) = @_;
+
+}
+
+sub player_get_action {
+  my ($game) = @_;
+
+}
+
+sub save_game {
+  my ($game) = @_;
+
+}
+
 sub ask_insurance {
   my ($game) = @_;
 
+  printf(" Insurance?  (Y) Yes  (N) No\n");
 
+  while (1) {
+    my $c = read_one_char();
+
+    if ($c eq "y") {
+      insure_hand($game);
+    } elsif ($c eq "n") {
+      no_insurance($game);
+    } else {
+      clear();
+      draw_hands($game);
+      ask_insurance($game);
+    }
+  }
 }
 
 sub deal_new_hand {
@@ -297,23 +422,23 @@ sub deal_new_hand {
 
   draw_hands($game);
 
-  # if (dealer_upcard_is_ace(\%dealer_hand) && !is_blackjack(\$player_hand{cards})) {
-  #   draw_hands($game);
-  #   ask_insurance($game);
-  #   return;
-  # }
+  if (dealer_upcard_is_ace(\%dealer_hand) && !is_blackjack(\$player_hand{cards})) {
+    draw_hands($game);
+    ask_insurance($game);
+    return;
+  }
 
-  # if (player_is_done(game, &player_hand)) {
-  #   dealer_hand->hide_down_card = false;
-  #   pay_hands(game);
-  #   draw_hands(game);
-  #   bet_options(game);
-  #   return;
-  # }
-  #
-  # draw_hands(game);
-  # player_get_action(game);
-  # save_game(game);
+  if (player_is_done($game, \%player_hand)) {
+    $dealer_hand{hide_down_card} = 0;
+    pay_hands($game);
+    draw_hands($game);
+    bet_options($game);
+    return;
+  }
+
+  draw_hands($game);
+  player_get_action($game);
+  save_game($game);
 }
 
 my %game = (
