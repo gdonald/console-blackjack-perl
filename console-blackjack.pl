@@ -174,6 +174,8 @@ sub shuffle {
 
 sub new_regular {
   my ($game) = @_;
+  
+  $game->{shoe} = [];
 
   for (my $deck = 0; $deck < $game->{num_decks}; ++$deck) {
     for (my $suit = 0; $suit < 4; ++$suit) {
@@ -192,6 +194,8 @@ sub new_aces {
 
   my $total_cards = $game->{num_decks} * CARDS_IN_DECK;
 
+  $game->{shoe} = [];
+  
   while (scalar(@{$game->{shoe}}) < $total_cards) {
     for (my $suit = 0; $suit < 4; ++$suit) {
       last if scalar(@{$game->{shoe}}) >= $total_cards;
@@ -208,6 +212,8 @@ sub new_jacks {
 
   my $total_cards = $game->{num_decks} * CARDS_IN_DECK;
 
+  $game->{shoe} = [];
+
   while (scalar(@{$game->{shoe}}) < $total_cards) {
     for (my $suit = 0; $suit < 4; ++$suit) {
       last if scalar(@{$game->{shoe}}) >= $total_cards;
@@ -223,6 +229,8 @@ sub new_aces_jacks {
   my ($game) = @_;
 
   my $total_cards = $game->{num_decks} * CARDS_IN_DECK;
+
+  $game->{shoe} = [];
 
   while (scalar(@{$game->{shoe}}) < $total_cards) {
     for (my $suit = 0; $suit < 4; ++$suit) {
@@ -244,6 +252,8 @@ sub new_sevens {
 
   my $total_cards = $game->{num_decks} * CARDS_IN_DECK;
 
+  $game->{shoe} = [];
+
   while (scalar(@{$game->{shoe}}) < $total_cards) {
     for (my $suit = 0; $suit < 4; ++$suit) {
       last if scalar(@{$game->{shoe}}) >= $total_cards;
@@ -260,6 +270,8 @@ sub new_eights {
 
   my $total_cards = $game->{num_decks} * CARDS_IN_DECK;
 
+  $game->{shoe} = [];
+
   while (scalar(@{$game->{shoe}}) < $total_cards) {
     for (my $suit = 0; $suit < 4; ++$suit) {
       last if scalar(@{$game->{shoe}}) >= $total_cards;
@@ -274,7 +286,9 @@ sub new_eights {
 sub need_to_shuffle {
   my ($game) = @_;
 
-  my $used = (scalar(@{$game->{shoe}}) / $game->{num_decks} * 52) * 100.0;
+  my $num_cards = $game->{num_decks} * CARDS_IN_DECK;
+  my $current_card = $num_cards - scalar(@{$game->{shoe}});
+  my $used = ($current_card / $num_cards) * 100.0;
 
   for (my $x = 0; $x < MAX_DECKS; ++$x) {
     if ($game->{num_decks} == $game->{shuffle_specs}[$x][1] && $used > $game->{shuffle_specs}[$x][0]) {
@@ -587,7 +601,7 @@ sub get_new_deck_type {
 
   if ($c eq '1') {
     new_regular($game);
-  } elsif ($c eq '2') {
+  } elsif ($c eq "2") {
     new_aces($game);
   } elsif ($c eq '3') {
     new_jacks($game);
@@ -667,7 +681,7 @@ sub player_can_split {
     return 0;
   }
 
-  return scalar(@{$player_hand->{cards}}) == 2 && $player_hand->{cards}[0]->{value} == $player_hand->{cards}[0]->{value} ? 1 : 0;
+  return scalar(@{$player_hand->{cards}}) == 2 && $player_hand->{cards}[0]->{value} == $player_hand->{cards}[1]->{value} ? 1 : 0;
 }
 
 sub player_can_dbl {
