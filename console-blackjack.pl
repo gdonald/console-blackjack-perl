@@ -314,61 +314,61 @@ sub dealer_upcard_is_ace {
 }
 
 sub clear {
-  system("export TERM=linux; clear");
+  system('export TERM=linux; clear');
 }
 
 sub draw_dealer_hand {
   my ($game) = @_;
   my $dealer_hand = $game->{dealer_hand};
 
-  print(" ");
+  print(' ');
 
   for (my $i = 0; $i < scalar(@{$dealer_hand->{cards}}); ++$i) {
     if ($i == 1 && $dealer_hand->{hide_down_card}) {
-      printf("%s ", $game->{faces}[13][0]);
+      printf('%s ', $game->{faces}[13][0]);
     } else {
       my $card = $dealer_hand->{cards}[$i];
 
-      printf("%s ", $game->{faces}[$card->{value}][$card->{suit}]);
+      printf('%s ', $game->{faces}[$card->{value}][$card->{suit}]);
     }
   }
 
-  printf(" ⇒  %u", dealer_hand_value($dealer_hand, SOFT));
+  printf(' ⇒  %u', dealer_hand_value($dealer_hand, SOFT));
 }
 
 sub draw_player_hand {
   my ($game, $index) = @_;
   my $player_hand = $game->{player_hands}[$index];
 
-  print(" ");
+  print(' ');
 
   for (my $i = 0; $i < scalar(@{$player_hand->{cards}}); ++$i) {
     my $card = $player_hand->{cards}[$i];
-    printf("%s ", $game->{faces}[$card->{value}][$card->{suit}]);
+    printf('%s ', $game->{faces}[$card->{value}][$card->{suit}]);
   }
 
-  printf(" ⇒  %u  ", player_hand_value($player_hand->{cards}, SOFT));
+  printf(' ⇒  %u  ', player_hand_value($player_hand->{cards}, SOFT));
 
   if ($player_hand->{status} == LOST) {
-    print("-");
+    print('-');
   } elsif ($player_hand->{status} == WON) {
-    print("+");
+    print('+');
   }
 
-  printf("\$%.2f", $player_hand->{bet} / 100.0);
+  printf('$%.2f', $player_hand->{bet} / 100.0);
 
   if (!$player_hand->{played} && $index == $game->{current_player_hand}) {
-    print(" ⇐");
+    print(' ⇐');
   }
 
-  print("  ");
+  print('  ');
 
   if ($player_hand->{status} == LOST) {
-    print(player_is_busted($player_hand) ? "Busted!" : "Lose!");
+    print(player_is_busted($player_hand) ? 'Busted!' : 'Lose!');
   } elsif ($player_hand->{status} == WON) {
-    print(is_blackjack($player_hand->{cards}) ? "Blackjack!" : "Won!");
+    print(is_blackjack($player_hand->{cards}) ? 'Blackjack!' : 'Won!');
   } elsif ($player_hand->{status} == PUSH) {
-    print("Push");
+    print('Push');
   }
 
   print("\n\n");
@@ -389,9 +389,9 @@ sub draw_hands {
 
 sub read_one_char {
   open(TTY, "+</dev/tty") or die "no tty: $!";
-  system "stty raw -echo min 1 time 1";
+  system 'stty raw -echo min 1 time 1';
   my $c = getc(TTY);
-  system "stty sane";
+  system 'stty sane';
   $c;
 }
 
@@ -564,7 +564,7 @@ sub get_new_bet {
   clear();
   draw_hands($game);
 
-  printf("  Current Bet: \$%u  Enter New Bet: \$", ($game->{current_bet} / 100));
+  printf('  Current Bet: \$%u  Enter New Bet: \$', ($game->{current_bet} / 100));
 
   my $tmp = <STDIN>;
   chomp $tmp;
@@ -580,7 +580,7 @@ sub get_new_num_decks {
   clear();
   draw_hands($game);
 
-  printf("  Number Of Decks: %u  Enter New Number Of Decks (1-8): ", ($game->{num_decks}));
+  printf('  Number Of Decks: %u  Enter New Number Of Decks (1-8): ', ($game->{num_decks}));
 
   my $tmp = <STDIN>;
 
@@ -602,7 +602,7 @@ sub get_new_deck_type {
 
   if ($c eq '1') {
     new_regular($game);
-  } elsif ($c eq "2") {
+  } elsif ($c eq '2') {
     new_aces($game);
   } elsif ($c eq '3') {
     new_jacks($game);
@@ -659,7 +659,7 @@ sub bet_options {
     get_new_bet($game);
   } elsif ($c eq 'o') {
     game_options($game);
-  } elsif ($c eq "q") {
+  } elsif ($c eq 'q') {
     clear();
   } else {
     clear();
@@ -825,12 +825,12 @@ sub player_get_action {
   my ($game) = @_;
 
   my $player_hand = $game->{player_hands}[$game->{current_player_hand}];
-  print(" ");
+  print(' ');
 
-  if (player_can_hit($player_hand)) {print("(H) Hit  ");}
-  if (player_can_stand($player_hand)) {print("(S) Stand  ");}
-  if (player_can_split($game)) {print("(P) Split  ");}
-  if (player_can_dbl($game)) {print("(D) Double  ");}
+  if (player_can_hit($player_hand)) {print('(H) Hit  ');}
+  if (player_can_stand($player_hand)) {print('(S) Stand  ');}
+  if (player_can_split($game)) {print('(P) Split  ');}
+  if (player_can_dbl($game)) {print('(D) Double  ');}
 
   print("\n");
 
@@ -867,9 +867,9 @@ sub ask_insurance {
 
   my $c = read_one_char();
 
-  if ($c eq "y") {
+  if ($c eq 'y') {
     insure_hand($game);
-  } elsif ($c eq "n") {
+  } elsif ($c eq 'n') {
     no_insurance($game);
   } else {
     clear();
