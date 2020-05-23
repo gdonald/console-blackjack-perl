@@ -28,31 +28,31 @@ use constant {
 };
 
 my @shuffle_specs = (
-  [ 95, 8 ],
-  [ 92, 7 ],
-  [ 89, 6 ],
-  [ 86, 5 ],
-  [ 84, 4 ],
-  [ 82, 3 ],
-  [ 81, 2 ],
-  [ 80, 1 ]
+  [95, 8],
+  [92, 7],
+  [89, 6],
+  [86, 5],
+  [84, 4],
+  [82, 3],
+  [81, 2],
+  [80, 1]
 );
 
 my @faces = (
-  [ "🂡", "🂱", "🃁", "🃑" ],
-  [ "🂢", "🂲", "🃂", "🃒" ],
-  [ "🂣", "🂳", "🃃", "🃓" ],
-  [ "🂤", "🂴", "🃄", "🃔" ],
-  [ "🂥", "🂵", "🃅", "🃕" ],
-  [ "🂦", "🂶", "🃆", "🃖" ],
-  [ "🂧", "🂷", "🃇", "🃗" ],
-  [ "🂨", "🂸", "🃈", "🃘" ],
-  [ "🂩", "🂹", "🃉", "🃙" ],
-  [ "🂪", "🂺", "🃊", "🃚" ],
-  [ "🂫", "🂻", "🃋", "🃛" ],
-  [ "🂭", "🂽", "🃍", "🃝" ],
-  [ "🂮", "🂾", "🃎", "🃞" ],
-  [ "🂠" ]
+  ['🂡', '🂱', '🃁', '🃑'],
+  ['🂢', '🂲', '🃂', '🃒'],
+  ['🂣', '🂳', '🃃', '🃓'],
+  ['🂤', '🂴', '🃄', '🃔'],
+  ['🂥', '🂵', '🃅', '🃕'],
+  ['🂦', '🂶', '🃆', '🃖'],
+  ['🂧', '🂷', '🃇', '🃗'],
+  ['🂨', '🂸', '🃈', '🃘'],
+  ['🂩', '🂹', '🃉', '🃙'],
+  ['🂪', '🂺', '🃊', '🃚'],
+  ['🂫', '🂻', '🃋', '🃛'],
+  ['🂭', '🂽', '🃍', '🃝'],
+  ['🂮', '🂾', '🃎', '🃞'],
+  ['🂠']
 );
 
 sub is_ace {
@@ -175,7 +175,7 @@ sub shuffle {
 
 sub new_regular {
   my ($game) = @_;
-  
+
   $game->{shoe} = [];
 
   for (my $deck = 0; $deck < $game->{num_decks}; ++$deck) {
@@ -196,7 +196,7 @@ sub new_aces {
   my $total_cards = $game->{num_decks} * CARDS_IN_DECK;
 
   $game->{shoe} = [];
-  
+
   while (scalar(@{$game->{shoe}}) < $total_cards) {
     for (my $suit = 0; $suit < 4; ++$suit) {
       last if scalar(@{$game->{shoe}}) >= $total_cards;
@@ -321,7 +321,7 @@ sub draw_dealer_hand {
   my ($game) = @_;
   my $dealer_hand = $game->{dealer_hand};
 
-  printf(" ");
+  print(" ");
 
   for (my $i = 0; $i < scalar(@{$dealer_hand->{cards}}); ++$i) {
     if ($i == 1 && $dealer_hand->{hide_down_card}) {
@@ -340,7 +340,7 @@ sub draw_player_hand {
   my ($game, $index) = @_;
   my $player_hand = $game->{player_hands}[$index];
 
-  printf(" ");
+  print(" ");
 
   for (my $i = 0; $i < scalar(@{$player_hand->{cards}}); ++$i) {
     my $card = $player_hand->{cards}[$i];
@@ -350,35 +350,35 @@ sub draw_player_hand {
   printf(" ⇒  %u  ", player_hand_value($player_hand->{cards}, SOFT));
 
   if ($player_hand->{status} == LOST) {
-    printf("-");
+    print("-");
   } elsif ($player_hand->{status} == WON) {
-    printf("+");
+    print("+");
   }
 
   printf("\$%.2f", $player_hand->{bet} / 100.0);
 
   if (!$player_hand->{played} && $index == $game->{current_player_hand}) {
-    printf(" ⇐");
+    print(" ⇐");
   }
 
-  printf("  ");
+  print("  ");
 
   if ($player_hand->{status} == LOST) {
-    printf(player_is_busted($player_hand) ? "Busted!" : "Lose!");
+    print(player_is_busted($player_hand) ? "Busted!" : "Lose!");
   } elsif ($player_hand->{status} == WON) {
-    printf(is_blackjack($player_hand->{cards}) ? "Blackjack!" : "Won!");
+    print(is_blackjack($player_hand->{cards}) ? "Blackjack!" : "Won!");
   } elsif ($player_hand->{status} == PUSH) {
-    printf("Push");
+    print("Push");
   }
 
-  printf("\n\n");
+  print("\n\n");
 }
 
 sub draw_hands {
   my ($game) = @_;
 
   clear();
-  printf("\n Dealer: \n");
+  print("\n Dealer: \n");
   draw_dealer_hand($game);
   printf("\n\n Player \$%.2f:\n", $game->{money} / 100.0);
 
@@ -596,7 +596,7 @@ sub get_new_deck_type {
 
   clear();
   draw_hands($game);
-  printf(" (1) Regular  (2) Aces  (3) Jacks  (4) Aces & Jacks  (5) Sevens  (6) Eights\n");
+  print(" (1) Regular  (2) Aces  (3) Jacks  (4) Aces & Jacks  (5) Sevens  (6) Eights\n");
 
   my $c = read_one_char();
 
@@ -627,7 +627,7 @@ sub game_options {
 
   clear();
   draw_hands($game);
-  printf(" (N) Number of Decks  (T) Deck Type  (B) Back\n");
+  print(" (N) Number of Decks  (T) Deck Type  (B) Back\n");
 
   my $c = read_one_char();
 
@@ -649,7 +649,7 @@ sub game_options {
 sub bet_options {
   my ($game) = @_;
 
-  printf(" (D) Deal Hand  (B) Change Bet  (O) Options  (Q) Quit\n");
+  print(" (D) Deal Hand  (B) Change Bet  (O) Options  (Q) Quit\n");
 
   my $c = read_one_char();
 
@@ -662,7 +662,6 @@ sub bet_options {
   } elsif ($c eq "q") {
     clear();
   } else {
-    print "here 2!";
     clear();
     draw_hands($game);
     bet_options($game);
@@ -826,14 +825,14 @@ sub player_get_action {
   my ($game) = @_;
 
   my $player_hand = $game->{player_hands}[$game->{current_player_hand}];
-  printf(" ");
+  print(" ");
 
-  if (player_can_hit($player_hand)) {printf("(H) Hit  ");}
-  if (player_can_stand($player_hand)) {printf("(S) Stand  ");}
-  if (player_can_split($game)) {printf("(P) Split  ");}
-  if (player_can_dbl($game)) {printf("(D) Double  ");}
+  if (player_can_hit($player_hand)) {print("(H) Hit  ");}
+  if (player_can_stand($player_hand)) {print("(S) Stand  ");}
+  if (player_can_split($game)) {print("(P) Split  ");}
+  if (player_can_dbl($game)) {print("(D) Double  ");}
 
-  printf("\n");
+  print("\n");
 
   my $c = read_one_char();
 
@@ -864,7 +863,7 @@ sub save_game {
 sub ask_insurance {
   my ($game) = @_;
 
-  printf(" Insurance?  (Y) Yes  (N) No\n");
+  print(" Insurance?  (Y) Yes  (N) No\n");
 
   my $c = read_one_char();
 
@@ -894,7 +893,7 @@ sub deal_new_hand {
   deal_card($game->{shoe}, (\%player_hand)->{cards});
   deal_card($game->{shoe}, (\%dealer_hand)->{cards});
 
-  $game->{player_hands}[0] = \%player_hand;
+  $game->{player_hands} = [\%player_hand];
   $game->{current_player_hand} = 0;
   $game->{dealer_hand} = \%dealer_hand;
 
@@ -943,12 +942,12 @@ my %game = (
   shoe                => [],
   dealer_hand         => {},
   player_hands        => [],
-  num_decks           => 1,
+  num_decks           => 8,
   money               => 10000,
   current_bet         => 500,
   current_player_hand => 0,
-  shuffle_specs       => [ @shuffle_specs ],
-  faces               => [ @faces ]
+  shuffle_specs       => [@shuffle_specs],
+  faces               => [@faces]
 );
 
 load_game(\%game);
