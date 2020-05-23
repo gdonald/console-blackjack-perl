@@ -8,4 +8,4 @@
 
 ## License
 
-[![GitHub](https://img.shields.io/github/license/gdonald/console-blackjack-perl?color=aa0000)](https://github.com/gdonald/console-blackjack-perl/blob/master/LICENSE)
+[![GitHub](https://img.shields.io/github/license/gdonald/console-blackjack-perl)](https://github.com/gdonald/console-blackjack-perl/blob/master/LICENSE)
