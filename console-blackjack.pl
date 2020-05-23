@@ -11,6 +11,7 @@ $SIG{ __DIE__ } = sub {Carp::confess(@_)};
 
 use utf8;
 use open ':std', ':encoding(UTF-8)';
+use Storable qw(dclone);
 
 use constant {
   SAVE_FILE        => 'bj.txt',
@@ -773,27 +774,29 @@ sub player_stand {
 sub player_split {
   my ($game) = @_;
 
-  my %new_hand = (cards => [], bet => $game->{current_bet}, stood => 0, played => 0, payed => 0, status => 0);
-  my $hand_count = scalar(@{$game->{player_hands}});
-
   if (!player_can_split($game)) {
     draw_hands($game);
     player_get_action($game);
     return;
   }
 
-  $game->{player_hands}[scalar(@{$game->{player_hands}}) + 1] = \%new_hand;
+  my %new_hand = (cards => [], bet => $game->{current_bet}, stood => 0, played => 0, payed => 0, status => 0);
+  my $hand_count = scalar(@{$game->{player_hands}});
+
+  $game->{player_hands}[$hand_count] = \%new_hand;
 
   while ($hand_count > $game->{current_player_hand}) {
-    $game->{player_hands}[$hand_count] = $game->{player_hands}[$hand_count - 1];
+    my $ph = dclone($game->{player_hands}[$hand_count - 1]);
+    $game->{player_hands}[$hand_count] = $ph;
     --$hand_count;
   }
 
-  my $this_hand = $game->{player_hands}[scalar(@{$game->{player_hands}})];
-  my $split_hand = $game->{player_hands}[scalar(@{$game->{player_hands}}) + 1];
+  my $this_hand = $game->{player_hands}[$game->{current_player_hand}];
+  my $split_hand = $game->{player_hands}[$game->{current_player_hand} + 1];
 
-  my $card = $this_hand->{cards}[1];
-  $split_hand->{cards}[0] = $card;
+  $split_hand->{cards} = [dclone($this_hand->{cards}[1])];
+  $this_hand->{cards} = [dclone($this_hand->{cards}[0])];
+
   deal_card($game->{shoe}, $this_hand->{cards});
 
   if (player_is_done($game, $this_hand)) {
