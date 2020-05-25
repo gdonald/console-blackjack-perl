@@ -368,9 +368,17 @@ sub draw_hands {
 }
 
 sub read_one_char {
+  my ($matcher) = @_;
+
   open(TTY, "+</dev/tty") or die "no tty: $!";
   system 'stty raw -echo min 1 time 1';
-  my $c = getc(TTY);
+
+  my $c;
+  while (1) {
+    $c = getc(TTY);
+    last if $c =~ $matcher;
+  }
+
   system 'stty sane';
   $c;
 }
@@ -575,7 +583,7 @@ sub get_new_deck_type {
   draw_hands($game);
   print(" (1) Regular  (2) Aces  (3) Jacks  (4) Aces & Jacks  (5) Sevens  (6) Eights\n");
 
-  my $c = read_one_char();
+  my $c = read_one_char(qr/[1-6]/);
 
   if ($c eq '1') {
     new_regular($game);
@@ -589,10 +597,6 @@ sub get_new_deck_type {
     new_sevens($game);
   } elsif ($c eq '6') {
     new_eights($game);
-  } else {
-    clear();
-    draw_hands($game);
-    game_options($game);
   }
 
   draw_hands($game);
@@ -606,7 +610,7 @@ sub game_options {
   draw_hands($game);
   print(" (N) Number of Decks  (T) Deck Type  (B) Back\n");
 
-  my $c = read_one_char();
+  my $c = read_one_char(qr/[ntb]/);
 
   if ($c eq 'n') {
     get_new_num_decks($game);
@@ -616,10 +620,6 @@ sub game_options {
     clear();
     draw_hands($game);
     bet_options($game);
-  } else {
-    clear();
-    draw_hands($game);
-    game_options($game);
   }
 }
 
@@ -628,20 +628,17 @@ sub bet_options {
 
   print(" (D) Deal Hand  (B) Change Bet  (O) Options  (Q) Quit\n");
 
-  my $c = read_one_char();
+  my $c = read_one_char(qr/[dboq]/);
 
-  if ($c eq 'd') {
-    deal_new_hand($game);
-  } elsif ($c eq 'b') {
+  return if $c eq 'd';
+
+  if ($c eq 'b') {
     get_new_bet($game);
   } elsif ($c eq 'o') {
     game_options($game);
   } elsif ($c eq 'q') {
+    $game->{quitting} = 1;
     clear();
-  } else {
-    clear();
-    draw_hands($game);
-    bet_options($game);
   }
 }
 
@@ -799,7 +796,7 @@ sub player_get_action {
 
   print("\n");
 
-  my $c = read_one_char();
+  my $c = read_one_char(qr/[hspd]/);
 
   if ($c eq 'h') {
     player_hit($game);
@@ -809,10 +806,6 @@ sub player_get_action {
     player_split($game);
   } elsif ($c eq 'd') {
     player_dbl($game);
-  } else {
-    clear();
-    draw_hands($game);
-    player_get_action($game);
   }
 }
 
@@ -829,16 +822,12 @@ sub ask_insurance {
 
   print(" Insurance?  (Y) Yes  (N) No\n");
 
-  my $c = read_one_char();
+  my $c = read_one_char(qr/[yn]/);
 
   if ($c eq 'y') {
     insure_hand($game);
   } elsif ($c eq 'n') {
     no_insurance($game);
-  } else {
-    clear();
-    draw_hands($game);
-    ask_insurance($game);
   }
 }
 
@@ -909,9 +898,14 @@ my %game = (
   current_bet         => 500,
   current_player_hand => 0,
   shuffle_specs       => [@shuffle_specs],
-  faces               => [@faces]
+  faces               => [@faces],
+  quitting            => 0
 );
 
 load_game(\%game);
 new_regular(\%game);
-deal_new_hand(\%game);
+
+while (1) {
+  deal_new_hand(\%game);
+  last if $game{quitting};
+}
