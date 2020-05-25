@@ -154,15 +154,19 @@ sub shuffle {
   }
 }
 
-sub new_regular {
-  my ($game) = @_;
+sub new_shoe {
+  my ($game, $values) = @_;
+
+  my $total_cards = $game->{num_decks} * CARDS_IN_DECK;
 
   $game->{shoe} = [];
 
-  for (my $deck = 0; $deck < $game->{num_decks}; ++$deck) {
+  while (scalar(@{$game->{shoe}}) < $total_cards) {
     for (my $suit = 0; $suit < 4; ++$suit) {
-      for (my $value = 0; $value < 13; ++$value) {
-        my %c = (suit => $suit, value => $value);
+      last if scalar(@{$game->{shoe}}) >= $total_cards;
+
+      for (@{$values}) {
+        my %c = (suit => $suit, value => $_);
         push @{$game->{shoe}}, \%c;
       }
     }
@@ -171,98 +175,40 @@ sub new_regular {
   shuffle(\$game->{shoe});
 }
 
+sub new_regular {
+  my ($game) = @_;
+
+  new_shoe($game, [0 .. 13]);
+}
+
 sub new_aces {
   my ($game) = @_;
 
-  my $total_cards = $game->{num_decks} * CARDS_IN_DECK;
-
-  $game->{shoe} = [];
-
-  while (scalar(@{$game->{shoe}}) < $total_cards) {
-    for (my $suit = 0; $suit < 4; ++$suit) {
-      last if scalar(@{$game->{shoe}}) >= $total_cards;
-      my %c = (suit => $suit, value => 0);
-      push @{$game->{shoe}}, \%c;
-    }
-  }
-
-  shuffle(\$game->{shoe});
+  new_shoe($game, [0]);
 }
 
 sub new_jacks {
   my ($game) = @_;
 
-  my $total_cards = $game->{num_decks} * CARDS_IN_DECK;
-
-  $game->{shoe} = [];
-
-  while (scalar(@{$game->{shoe}}) < $total_cards) {
-    for (my $suit = 0; $suit < 4; ++$suit) {
-      last if scalar(@{$game->{shoe}}) >= $total_cards;
-      my %c = (suit => $suit, value => 10);
-      push @{$game->{shoe}}, \%c;
-    }
-  }
-
-  shuffle(\$game->{shoe});
+  new_shoe($game, [10]);
 }
 
 sub new_aces_jacks {
   my ($game) = @_;
 
-  my $total_cards = $game->{num_decks} * CARDS_IN_DECK;
-
-  $game->{shoe} = [];
-
-  while (scalar(@{$game->{shoe}}) < $total_cards) {
-    for (my $suit = 0; $suit < 4; ++$suit) {
-      last if scalar(@{$game->{shoe}}) >= $total_cards;
-      my %c1 = (suit => $suit, value => 0);
-      push @{$game->{shoe}}, \%c1;
-
-      last if scalar(@{$game->{shoe}}) >= $total_cards;
-      my %c2 = (suit => $suit, value => 10);
-      push @{$game->{shoe}}, \%c2;
-    }
-  }
-
-  shuffle(\$game->{shoe});
+  new_shoe($game, [0, 10]);
 }
 
 sub new_sevens {
   my ($game) = @_;
 
-  my $total_cards = $game->{num_decks} * CARDS_IN_DECK;
-
-  $game->{shoe} = [];
-
-  while (scalar(@{$game->{shoe}}) < $total_cards) {
-    for (my $suit = 0; $suit < 4; ++$suit) {
-      last if scalar(@{$game->{shoe}}) >= $total_cards;
-      my %c = (suit => $suit, value => 6);
-      push @{$game->{shoe}}, \%c;
-    }
-  }
-
-  shuffle(\$game->{shoe});
+  new_shoe($game, [6]);
 }
 
 sub new_eights {
   my ($game) = @_;
 
-  my $total_cards = $game->{num_decks} * CARDS_IN_DECK;
-
-  $game->{shoe} = [];
-
-  while (scalar(@{$game->{shoe}}) < $total_cards) {
-    for (my $suit = 0; $suit < 4; ++$suit) {
-      last if scalar(@{$game->{shoe}}) >= $total_cards;
-      my %c = (suit => $suit, value => 7);
-      push @{$game->{shoe}}, \%c;
-    }
-  }
-
-  shuffle(\$game->{shoe});
+  new_shoe($game, [7]);
 }
 
 sub need_to_shuffle {
