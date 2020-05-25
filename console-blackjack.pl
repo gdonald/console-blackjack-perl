@@ -178,7 +178,7 @@ sub new_shoe {
 sub new_regular {
   my ($game) = @_;
 
-  new_shoe($game, [0 .. 13]);
+  new_shoe($game, [0 .. 12]);
 }
 
 sub new_aces {
@@ -254,7 +254,6 @@ sub draw_dealer_hand {
       printf('%s ', $game->{faces}[13][0]);
     } else {
       my $card = $dealer_hand->{cards}[$i];
-
       printf('%s ', $game->{faces}[$card->{value}][$card->{suit}]);
     }
   }
@@ -282,11 +281,7 @@ sub draw_player_hand {
   }
 
   printf('$%.2f', $player_hand->{bet} / 100.0);
-
-  if (!$player_hand->{played} && $index == $game->{current_player_hand}) {
-    print(' ⇐');
-  }
-
+  print(' ⇐') if (!$player_hand->{played} && $index == $game->{current_player_hand});
   print('  ');
 
   if ($player_hand->{status} == LOST) {
@@ -334,10 +329,7 @@ sub need_to_play_dealer_hand {
 
   for (my $x = 0; $x < scalar(@{$game->{player_hands}}); ++$x) {
     my $player_hand = $game->{player_hands}[$x];
-
-    if (!(player_is_busted($player_hand) || is_blackjack($player_hand->{cards}))) {
-      return 1;
-    }
+    return 1 if !(player_is_busted($player_hand) || is_blackjack($player_hand->{cards}));
   }
 
   return 0;
@@ -347,10 +339,7 @@ sub play_dealer_hand {
   my ($game) = @_;
 
   my $dealer_hand = $game->{dealer_hand};
-
-  if (is_blackjack($dealer_hand->{cards})) {
-    $dealer_hand->{hide_down_card} = 0;
-  }
+  $dealer_hand->{hide_down_card} = 0 if (is_blackjack($dealer_hand->{cards}));
 
   if (!need_to_play_dealer_hand($game)) {
     pay_hands($game);
@@ -438,15 +427,10 @@ sub player_is_done {
 sub normalize_bet {
   my ($game) = @_;
 
-  if ($game->{current_bet} < MIN_BET) {
-    $game->{current_bet} = MIN_BET;
-  } elsif ($game->{current_bet} > MAX_BET) {
-    $game->{current_bet} = MAX_BET;
-  }
+  $game->{current_bet} = MIN_BET if $game->{current_bet} < MIN_BET;
+  $game->{current_bet} = MAX_BET if $game->{current_bet} > MAX_BET;
 
-  if ($game->{current_bet} > $game->{money}) {
-    $game->{current_bet} = $game->{money};
-  }
+  $game->{current_bet} = $game->{money} if $game->{current_bet} > $game->{money};
 }
 
 sub dealer_is_busted {
@@ -471,10 +455,7 @@ sub pay_hands {
     my $phv = player_hand_value($player_hand->{cards}, SOFT);
 
     if ($dhb || $phv > $dhv) {
-      if (is_blackjack($player_hand->{cards})) {
-        $player_hand->{bet} *= 1.5;
-      }
-
+      $player_hand->{bet} *= 1.5 if (is_blackjack($player_hand->{cards}));
       $game->{money} += $player_hand->{bet};
       $player_hand->{status} = WON;
     } elsif ($phv < $dhv) {
@@ -515,10 +496,10 @@ sub get_new_num_decks {
 
   my $tmp = <STDIN>;
 
-  if ($tmp < 1) {$tmp = 1;}
-  if ($tmp > 8) {$tmp = 8;}
-
+  $tmp = 1 if ($tmp < 1);
+  $tmp = 8 if ($tmp > 8);
   $game->{num_decks} = $tmp;
+
   game_options($game);
 }
 
