@@ -24,7 +24,9 @@ use constant {
   SOFT             => 1,
   WON              => 2,
   LOST             => 3,
-  PUSH             => 4
+  PUSH             => 4,
+  PLAYER           => 0,
+  DEALER           => 1
 };
 
 my @shuffle_specs = (
@@ -65,46 +67,30 @@ sub is_ten {
   $card->{value} > 8;
 }
 
-sub dealer_hand_value {
-  my ($dealer_hand, $method) = @_;
+sub hand_value {
+  my ($hand, $method, $owner) = @_;
 
   my $total = 0;
 
-  for my $i (0 .. scalar(@{$dealer_hand->{cards}}) - 1) {
-    next if $i == 1 && $dealer_hand->{hide_down_card};
+  for my $i (0 .. scalar(@{$hand->{cards}}) - 1) {
+    next if $owner == DEALER && $i == 1 && $hand->{hide_down_card};
 
-    my $tmp_v = @{$dealer_hand->{cards}}[$i]->{value} + 1;
+    my $tmp_v = @{$hand->{cards}}[$i]->{value} + 1;
     my $v = $tmp_v > 9 ? 10 : $tmp_v;
 
     $v = 11 if $method eq SOFT && $v == 1 && $total < 11;
     $total += $v;
   }
 
-  return dealer_hand_value($dealer_hand, HARD) if $method eq SOFT && $total > 21;
+  return hand_value($hand, HARD, $owner) if $method eq SOFT && $total > 21;
 
-  $total;
-}
-
-sub player_hand_value {
-  my ($cards, $method) = @_;
-  my $total = 0;
-
-  for (@{$cards}) {
-    my $tmp_v = $_->{value} + 1;
-    my $v = $tmp_v > 9 ? 10 : $tmp_v;
-
-    $v = 11 if $method eq SOFT && $v == 1 && $total < 11;
-    $total += $v;
-  }
-
-  return player_hand_value($cards, HARD) if $method eq SOFT && $total > 21;
   $total;
 }
 
 sub player_is_busted {
   my ($player_hand) = @_;
 
-  player_hand_value($player_hand->{cards}, SOFT) > 21 ? 1 : 0;
+  hand_value($player_hand, SOFT, PLAYER) > 21 ? 1 : 0;
 }
 
 sub is_blackjack {
@@ -121,7 +107,7 @@ sub player_can_hit {
 
   ($player_hand->{played}
     || $player_hand->{stood}
-    || 21 == player_hand_value($player_hand->{cards}, HARD)
+    || 21 == hand_value($player_hand, HARD, PLAYER)
     || is_blackjack($player_hand->{cards})
     || player_is_busted($player_hand)) ? 0 : 1;
 }
@@ -258,7 +244,7 @@ sub draw_dealer_hand {
     }
   }
 
-  printf(' ⇒  %u', dealer_hand_value($dealer_hand, SOFT));
+  printf(' ⇒  %u', hand_value($dealer_hand, SOFT, DEALER));
 }
 
 sub draw_player_hand {
@@ -272,7 +258,7 @@ sub draw_player_hand {
     printf('%s ', $game->{faces}[$card->{value}][$card->{suit}]);
   }
 
-  printf(' ⇒  %u  ', player_hand_value($player_hand->{cards}, SOFT));
+  printf(' ⇒  %u  ', hand_value($player_hand, SOFT, PLAYER));
 
   if ($player_hand->{status} == LOST) {
     print('-');
@@ -348,13 +334,13 @@ sub play_dealer_hand {
 
   $dealer_hand->{hide_down_card} = 0;
 
-  my $soft_count = dealer_hand_value($dealer_hand, SOFT);
-  my $hard_count = dealer_hand_value($dealer_hand, HARD);
+  my $soft_count = hand_value($dealer_hand, SOFT, DEALER);
+  my $hard_count = hand_value($dealer_hand, HARD, DEALER);
 
   while ($soft_count < 18 && $hard_count < 17) {
     deal_card($game->{shoe}, $dealer_hand->{cards});
-    $soft_count = dealer_hand_value($dealer_hand, SOFT);
-    $hard_count = dealer_hand_value($dealer_hand, HARD);
+    $soft_count = hand_value($dealer_hand, SOFT, DEALER);
+    $hard_count = hand_value($dealer_hand, HARD, DEALER);
   }
 
   pay_hands($game);
@@ -407,8 +393,8 @@ sub player_is_done {
     || $player_hand->{stood}
     || is_blackjack($player_hand->{cards})
     || player_is_busted($player_hand)
-    || 21 == player_hand_value($player_hand->{cards}, SOFT)
-    || 21 == player_hand_value($player_hand->{cards}, HARD)) {
+    || 21 == hand_value($player_hand, SOFT, PLAYER)
+    || 21 == hand_value($player_hand, HARD, PLAYER)) {
 
     $player_hand->{played} = 1;
 
@@ -436,14 +422,14 @@ sub normalize_bet {
 sub dealer_is_busted {
   my ($dealer_hand) = @_;
 
-  dealer_hand_value($dealer_hand, SOFT) > 21 ? 1 : 0;
+  hand_value($dealer_hand, SOFT, DEALER) > 21 ? 1 : 0;
 }
 
 sub pay_hands {
   my ($game) = @_;
 
   my $dealer_hand = $game->{dealer_hand};
-  my $dhv = dealer_hand_value($dealer_hand, SOFT);
+  my $dhv = hand_value($dealer_hand, SOFT, DEALER);
   my $dhb = dealer_is_busted($dealer_hand);
 
   for (my $x = 0; $x < scalar(@{$game->{player_hands}}); ++$x) {
@@ -452,7 +438,7 @@ sub pay_hands {
     next if ($player_hand->{payed});
     $player_hand->{payed} = 1;
 
-    my $phv = player_hand_value($player_hand->{cards}, SOFT);
+    my $phv = hand_value($player_hand, SOFT, PLAYER);
 
     if ($dhb || $phv > $dhv) {
       $player_hand->{bet} *= 1.5 if (is_blackjack($player_hand->{cards}));
