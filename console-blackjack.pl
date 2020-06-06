@@ -500,16 +500,20 @@ sub get_new_deck_type {
 
   if ($c eq '1') {
     new_regular($game);
-  } elsif ($c eq '2') {
-    new_aces($game);
-  } elsif ($c eq '3') {
-    new_jacks($game);
-  } elsif ($c eq '4') {
-    new_aces_jacks($game);
-  } elsif ($c eq '5') {
-    new_sevens($game);
-  } elsif ($c eq '6') {
-    new_eights($game);
+  } else {
+    $game->{num_decks} = 8;
+
+    if ($c eq '2') {
+      new_aces($game);
+    } elsif ($c eq '3') {
+      new_jacks($game);
+    } elsif ($c eq '4') {
+      new_aces_jacks($game);
+    } elsif ($c eq '5') {
+      new_sevens($game);
+    } elsif ($c eq '6') {
+      new_eights($game);
+    }
   }
 
   draw_hands($game);
