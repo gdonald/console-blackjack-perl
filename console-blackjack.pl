@@ -9,6 +9,7 @@ use warnings FATAL => 'all';
 # use Carp 'verbose';
 # $SIG{ __DIE__ } = sub {Carp::confess(@_)};
 
+use lib './lib';
 use Console::Blackjack qw(run);
 
 run();

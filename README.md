@@ -4,7 +4,7 @@
 
 ## Run
 
-    perl -I. console-blackjack.pl
+    ./console-blackjack.pl
 
 ## License
 

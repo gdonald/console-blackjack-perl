@@ -1,7 +1,8 @@
 
 package Console::Blackjack;
 
-use v5.10;
+use v5.20;
+use experimental qw(signatures);
 use strict;
 use warnings FATAL => 'all';
 
@@ -28,19 +29,15 @@ use constant {
     DEALER           => 1
 };
 
-sub is_ace {
-    my ($card) = @_;
+sub is_ace ($card) {
     !$card->{value};
 }
 
-sub is_ten {
-    my ($card) = @_;
+sub is_ten ($card) {
     $card->{value} > 8;
 }
 
-sub hand_value {
-    my ($hand, $method, $owner) = @_;
-
+sub hand_value ($hand, $method, $owner) {
     my $total = 0;
 
     for my $i (0 .. scalar(@{ $hand->{cards} }) - 1) {
@@ -58,24 +55,18 @@ sub hand_value {
     $total;
 }
 
-sub player_is_busted {
-    my ($player_hand) = @_;
-
+sub player_is_busted ($player_hand) {
     hand_value($player_hand, SOFT, PLAYER) > 21 ? 1 : 0;
 }
 
-sub is_blackjack {
-    my ($cards) = @_;
-
+sub is_blackjack ($cards) {
     return 0 if scalar(@{$cards}) != 2;
     return 1 if is_ace(@$cards[0]) && is_ten(@$cards[1]);
 
     is_ace(@$cards[1]) && is_ten(@$cards[0]) ? 1 : 0;
 }
 
-sub player_can_hit {
-    my ($player_hand) = @_;
-
+sub player_can_hit ($player_hand) {
     ($player_hand->{played}
         || $player_hand->{stood}
         || 21 == hand_value($player_hand, HARD, PLAYER)
@@ -83,16 +74,13 @@ sub player_can_hit {
         || player_is_busted($player_hand)) ? 0 : 1;
 }
 
-sub player_can_stand {
-    my ($player_hand) = @_;
-
+sub player_can_stand ($player_hand) {
     ($player_hand->{stood}
         || player_is_busted($player_hand)
         || is_blackjack($player_hand->{cards})) ? 0 : 1;
 }
 
-sub all_bets {
-    my ($game) = @_;
+sub all_bets ($game) {
     my $bets = 0;
 
     for (@{ $game->{player_hands} }) {
@@ -102,18 +90,14 @@ sub all_bets {
     return $bets;
 }
 
-sub shuffle {
-    my ($shoe) = @_;
-
+sub shuffle ($shoe) {
     for (my $i = @{ ${$shoe} } ; --$i ;) {
         my $j = int rand($i + 1);
         @{ ${$shoe} }[ $i, $j ] = @{ ${$shoe} }[ $j, $i ];
     }
 }
 
-sub new_shoe {
-    my ($game, $values) = @_;
-
+sub new_shoe ($game, $values) {
     my $total_cards = $game->{num_decks} * CARDS_IN_DECK;
 
     $game->{shoe} = [];
@@ -132,45 +116,31 @@ sub new_shoe {
     shuffle(\$game->{shoe});
 }
 
-sub new_regular {
-    my ($game) = @_;
-
+sub new_regular ($game) {
     new_shoe($game, [ 0 .. 12 ]);
 }
 
-sub new_aces {
-    my ($game) = @_;
-
+sub new_aces ($game) {
     new_shoe($game, [0]);
 }
 
-sub new_jacks {
-    my ($game) = @_;
-
+sub new_jacks ($game) {
     new_shoe($game, [10]);
 }
 
-sub new_aces_jacks {
-    my ($game) = @_;
-
+sub new_aces_jacks ($game) {
     new_shoe($game, [ 0, 10 ]);
 }
 
-sub new_sevens {
-    my ($game) = @_;
-
+sub new_sevens ($game) {
     new_shoe($game, [6]);
 }
 
-sub new_eights {
-    my ($game) = @_;
-
+sub new_eights ($game) {
     new_shoe($game, [7]);
 }
 
-sub need_to_shuffle {
-    my ($game) = @_;
-
+sub need_to_shuffle ($game) {
     my $num_cards    = $game->{num_decks} * CARDS_IN_DECK;
     my $current_card = $num_cards - scalar(@{ $game->{shoe} });
     my $used         = ($current_card / $num_cards) * 100.0;
@@ -183,16 +153,12 @@ sub need_to_shuffle {
     0;
 }
 
-sub deal_card {
-    my ($shoe, $cards) = @_;
-
+sub deal_card ($shoe, $cards) {
     my $card = pop(@{$shoe});
     push @{$cards}, $card;
 }
 
-sub dealer_upcard_is_ace {
-    my ($dealer_hand) = @_;
-
+sub dealer_upcard_is_ace ($dealer_hand) {
     is_ace($dealer_hand->{cards}[0]);
 }
 
@@ -200,8 +166,7 @@ sub clear {
     system('export TERM=linux; clear');
 }
 
-sub draw_dealer_hand {
-    my ($game) = @_;
+sub draw_dealer_hand ($game) {
     my $dealer_hand = $game->{dealer_hand};
 
     print(' ');
@@ -219,8 +184,7 @@ sub draw_dealer_hand {
     printf(' ⇒  %u', hand_value($dealer_hand, SOFT, DEALER));
 }
 
-sub draw_player_hand {
-    my ($game, $index) = @_;
+sub draw_player_hand ($game, $index) {
     my $player_hand = $game->{player_hands}[$index];
 
     print(' ');
@@ -257,9 +221,7 @@ sub draw_player_hand {
     print("\n\n");
 }
 
-sub draw_hands {
-    my ($game) = @_;
-
+sub draw_hands ($game) {
     clear();
     print("\n Dealer: \n");
     draw_dealer_hand($game);
@@ -270,9 +232,7 @@ sub draw_hands {
     }
 }
 
-sub read_one_char {
-    my ($matcher) = @_;
-
+sub read_one_char ($matcher) {
     open(TTY, "+</dev/tty") or die "no tty: $!";
     system 'stty raw -echo min 1 time 1';
 
@@ -286,9 +246,7 @@ sub read_one_char {
     $c;
 }
 
-sub need_to_play_dealer_hand {
-    my ($game) = @_;
-
+sub need_to_play_dealer_hand ($game) {
     for (my $x = 0 ; $x < scalar(@{ $game->{player_hands} }) ; ++$x) {
         my $player_hand = $game->{player_hands}[$x];
         return 1
@@ -299,9 +257,7 @@ sub need_to_play_dealer_hand {
     return 0;
 }
 
-sub play_dealer_hand {
-    my ($game) = @_;
-
+sub play_dealer_hand ($game) {
     my $dealer_hand = $game->{dealer_hand};
     $dealer_hand->{hide_down_card} = 0
         if (is_blackjack($dealer_hand->{cards}));
@@ -325,9 +281,7 @@ sub play_dealer_hand {
     pay_hands($game);
 }
 
-sub no_insurance {
-    my ($game) = @_;
-
+sub no_insurance ($game) {
     if (is_blackjack($game->{dealer_hand}->{cards})) {
         $game->{dealer_hand}->{hide_down_card} = 0;
 
@@ -350,9 +304,7 @@ sub no_insurance {
     player_get_action($game);
 }
 
-sub insure_hand {
-    my ($game) = @_;
-
+sub insure_hand ($game) {
     my $player_hand = $game->{player_hands}[ $game->{current_player_hand} ];
 
     $player_hand->{bet} /= 2;
@@ -365,9 +317,7 @@ sub insure_hand {
     bet_options($game);
 }
 
-sub player_is_done {
-    my ($game, $player_hand) = @_;
-
+sub player_is_done ($game, $player_hand) {
     if ($player_hand->{played}
         || $player_hand->{stood}
         || is_blackjack($player_hand->{cards})
@@ -389,9 +339,7 @@ sub player_is_done {
     0;
 }
 
-sub normalize_bet {
-    my ($game) = @_;
-
+sub normalize_bet ($game) {
     $game->{current_bet} = MIN_BET if $game->{current_bet} < MIN_BET;
     $game->{current_bet} = MAX_BET if $game->{current_bet} > MAX_BET;
 
@@ -399,15 +347,11 @@ sub normalize_bet {
         if $game->{current_bet} > $game->{money};
 }
 
-sub dealer_is_busted {
-    my ($dealer_hand) = @_;
-
+sub dealer_is_busted ($dealer_hand) {
     hand_value($dealer_hand, SOFT, DEALER) > 21 ? 1 : 0;
 }
 
-sub pay_hands {
-    my ($game) = @_;
-
+sub pay_hands ($game) {
     my $dealer_hand = $game->{dealer_hand};
     my $dhv         = hand_value($dealer_hand, SOFT, DEALER);
     my $dhb         = dealer_is_busted($dealer_hand);
@@ -439,13 +383,11 @@ sub pay_hands {
     save_game($game);
 }
 
-sub get_new_bet {
-    my ($game) = @_;
-
+sub get_new_bet ($game) {
     clear();
     draw_hands($game);
 
-    printf('  Current Bet: \$%u  Enter New Bet: \$',
+    printf('  Current Bet: $%u  Enter New Bet: $',
         ($game->{current_bet} / 100));
 
     my $tmp = <STDIN>;
@@ -456,9 +398,7 @@ sub get_new_bet {
     deal_new_hand($game);
 }
 
-sub get_new_num_decks {
-    my ($game) = @_;
-
+sub get_new_num_decks ($game) {
     clear();
     draw_hands($game);
 
@@ -474,9 +414,7 @@ sub get_new_num_decks {
     game_options($game);
 }
 
-sub get_new_deck_type {
-    my ($game) = @_;
-
+sub get_new_deck_type ($game) {
     clear();
     draw_hands($game);
     print(
@@ -512,9 +450,7 @@ sub get_new_deck_type {
     bet_options($game);
 }
 
-sub game_options {
-    my ($game) = @_;
-
+sub game_options ($game) {
     clear();
     draw_hands($game);
     print(" (N) Number of Decks  (T) Deck Type  (B) Back\n");
@@ -534,9 +470,7 @@ sub game_options {
     }
 }
 
-sub bet_options {
-    my ($game) = @_;
-
+sub bet_options ($game) {
     print(" (D) Deal Hand  (B) Change Bet  (O) Options  (Q) Quit\n");
 
     my $c = read_one_char(qr/[dboq]/);
@@ -555,9 +489,7 @@ sub bet_options {
     }
 }
 
-sub player_can_split {
-    my ($game) = @_;
-
+sub player_can_split ($game) {
     my $player_hand = $game->{player_hands}[ $game->{current_player_hand} ];
 
     return 0
@@ -569,9 +501,7 @@ sub player_can_split {
     @$cards == 2 && @$cards[0]->{value} == @$cards[1]->{value} ? 1 : 0;
 }
 
-sub player_can_dbl {
-    my ($game) = @_;
-
+sub player_can_dbl ($game) {
     my $player_hand = $game->{player_hands}[ $game->{current_player_hand} ];
 
     return 0 if ($game->{money} < all_bets($game) + $player_hand->{bet});
@@ -582,9 +512,7 @@ sub player_can_dbl {
         || is_blackjack($player_hand->{cards}) ? 0 : 1;
 }
 
-sub process {
-    my ($game) = @_;
-
+sub process ($game) {
     if (more_hands_to_play($game)) {
         play_more_hands($game);
         return;
@@ -595,15 +523,11 @@ sub process {
     bet_options($game);
 }
 
-sub more_hands_to_play {
-    my ($game) = @_;
-
+sub more_hands_to_play ($game) {
     $game->{current_player_hand} < scalar(@{ $game->{player_hands} }) - 1;
 }
 
-sub play_more_hands {
-    my ($game) = @_;
-
+sub play_more_hands ($game) {
     my $player_hand =
         $game->{player_hands}[ ++($game->{current_player_hand}) ];
     deal_card($game->{shoe}, $player_hand->{cards});
@@ -617,9 +541,7 @@ sub play_more_hands {
     player_get_action($game);
 }
 
-sub player_hit {
-    my ($game) = @_;
-
+sub player_hit ($game) {
     my $player_hand = $game->{player_hands}[ $game->{current_player_hand} ];
     deal_card($game->{shoe}, $player_hand->{cards});
 
@@ -632,9 +554,7 @@ sub player_hit {
     player_get_action($game);
 }
 
-sub player_stand {
-    my ($game) = @_;
-
+sub player_stand ($game) {
     my $player_hand = $game->{player_hands}[ $game->{current_player_hand} ];
 
     $player_hand->{stood}  = 1;
@@ -650,9 +570,7 @@ sub player_stand {
     bet_options($game);
 }
 
-sub player_split {
-    my ($game) = @_;
-
+sub player_split ($game) {
     if (!player_can_split($game)) {
         draw_hands($game);
         player_get_action($game);
@@ -694,9 +612,7 @@ sub player_split {
     player_get_action($game);
 }
 
-sub player_dbl {
-    my ($game) = @_;
-
+sub player_dbl ($game) {
     my $player_hand = $game->{player_hands}[ $game->{current_player_hand} ];
 
     deal_card($game->{shoe}, $player_hand->{cards});
@@ -706,9 +622,7 @@ sub player_dbl {
     process($game) if (player_is_done($game, $player_hand));
 }
 
-sub player_get_action {
-    my ($game) = @_;
-
+sub player_get_action ($game) {
     my $player_hand = $game->{player_hands}[ $game->{current_player_hand} ];
     print(' ');
 
@@ -735,18 +649,14 @@ sub player_get_action {
     }
 }
 
-sub save_game {
-    my ($game) = @_;
-
+sub save_game ($game) {
     open(my $fh, '>:encoding(UTF-8)', SAVE_FILE) or die $!;
     printf($fh "%u\n%u\n%u\n",
         $game->{num_decks}, $game->{money}, $game->{current_bet});
     close($fh);
 }
 
-sub ask_insurance {
-    my ($game) = @_;
-
+sub ask_insurance ($game) {
     print(" Insurance?  (Y) Yes  (N) No\n");
 
     my $c = read_one_char(qr/[yn]/);
@@ -759,9 +669,7 @@ sub ask_insurance {
     }
 }
 
-sub deal_new_hand {
-    my ($game) = @_;
-
+sub deal_new_hand ($game) {
     new_regular($game) if (need_to_shuffle($game));
 
     my %player_hand = (
@@ -805,9 +713,7 @@ sub deal_new_hand {
     save_game($game);
 }
 
-sub load_game {
-    my ($game) = @_;
-
+sub load_game ($game) {
     if (open(my $fh, '<:encoding(UTF-8)', SAVE_FILE)) {
         my $line = <$fh>;
         chomp $line;
@@ -867,4 +773,3 @@ sub run {
 }
 
 1;
-
