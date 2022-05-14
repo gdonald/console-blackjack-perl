@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-use v5.10;
+use v5.20;
 use strict;
 use warnings FATAL => 'all';
 
