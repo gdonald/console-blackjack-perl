@@ -423,30 +423,10 @@ sub get_new_deck_type ($game) {
     );
 
     my $c = read_one_char(qr/[1-6]/);
+    $game->{deck_type} = $c;
+    $game->{deck_types}->{$game->{deck_type}}->($game);
 
-    if ( $c eq '1' ) {
-        new_regular($game);
-    }
-    else {
-        $game->{num_decks} = 8;
-
-        if ( $c eq '2' ) {
-            new_aces($game);
-        }
-        elsif ( $c eq '3' ) {
-            new_jacks($game);
-        }
-        elsif ( $c eq '4' ) {
-            new_aces_jacks($game);
-        }
-        elsif ( $c eq '5' ) {
-            new_sevens($game);
-        }
-        elsif ( $c eq '6' ) {
-            new_eights($game);
-        }
-    }
-
+    save_game($game);
     draw_hands($game);
     bet_options($game);
 }
@@ -650,13 +630,6 @@ sub player_get_action ($game) {
     }
 }
 
-sub save_game ($game) {
-    open( my $fh, '>:encoding(UTF-8)', SAVE_FILE ) or die $!;
-    printf( $fh "%u\n%u\n%u\n",
-        $game->{num_decks}, $game->{money}, $game->{current_bet} );
-    close($fh);
-}
-
 sub ask_insurance ($game) {
     print(" Insurance?  (Y) Yes  (N) No\n");
 
@@ -671,7 +644,7 @@ sub ask_insurance ($game) {
 }
 
 sub deal_new_hand ($game) {
-    new_regular($game) if ( need_to_shuffle($game) );
+    $game->{deck_types}->{$game->{deck_type}}->($game) if ( need_to_shuffle($game) );
 
     my %player_hand = (
         cards  => [],
@@ -715,6 +688,13 @@ sub deal_new_hand ($game) {
     save_game($game);
 }
 
+sub save_game ($game) {
+    open( my $fh, '>:encoding(UTF-8)', SAVE_FILE ) or die $!;
+    printf( $fh "%u\n%u\n%u\n%u\n",
+        $game->{num_decks}, $game->{money}, $game->{current_bet}, $game->{deck_type} );
+    close($fh);
+}
+
 sub load_game ($game) {
     if ( open( my $fh, '<:encoding(UTF-8)', SAVE_FILE ) ) {
         my $line = <$fh>;
@@ -729,6 +709,10 @@ sub load_game ($game) {
         chomp $line;
         $game->{current_bet} = int($line);
 
+        $line = <$fh>;
+        chomp $line;
+        $game->{deck_type} = int($line);
+
         close($fh);
     }
 }
@@ -740,6 +724,7 @@ sub run {
         dealer_hand         => {},
         player_hands        => [],
         num_decks           => 8,
+        deck_type           => 1,
         money               => 10000,
         current_bet         => 500,
         current_player_hand => 0,
@@ -762,11 +747,18 @@ sub run {
             [ '🂭', '🂽', '🃍', '🃝' ],
             [ '🂮', '🂾', '🃎', '🃞' ],
             ['🂠']
-        ]
+        ],
+        deck_types => {
+            1 => \&new_regular,
+            2 => \&new_aces,
+            3 => \&new_jacks,
+            4 => \&new_aces_jacks,
+            5 => \&new_sevens,
+            6 => \&new_eights
+        }
     );
 
     load_game( \%game );
-    new_regular( \%game );
 
     while (1) {
         deal_new_hand( \%game );
