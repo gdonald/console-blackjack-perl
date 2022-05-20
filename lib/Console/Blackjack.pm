@@ -87,7 +87,7 @@ sub all_bets ($game) {
         $bets += $_->{bet};
     }
 
-    return $bets;
+    $bets;
 }
 
 sub shuffle ($shoe) {
@@ -260,7 +260,7 @@ sub need_to_play_dealer_hand ($game) {
             || is_blackjack( $player_hand->{cards} ) );
     }
 
-    return 0;
+    0;
 }
 
 sub play_dealer_hand ($game) {
