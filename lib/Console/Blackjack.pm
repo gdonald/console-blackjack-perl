@@ -166,6 +166,12 @@ sub clear {
     system('export TERM=linux; clear');
 }
 
+sub card_face ( $game, $value, $suit ) {
+    return $game->{faces2}[$value][$suit] if ($game->{face_type} == 2);
+
+    $game->{faces}[$value][$suit];
+}
+
 sub draw_dealer_hand ($game) {
     my $dealer_hand = $game->{dealer_hand};
 
@@ -173,11 +179,11 @@ sub draw_dealer_hand ($game) {
 
     for ( my $i = 0 ; $i < scalar( @{ $dealer_hand->{cards} } ) ; ++$i ) {
         if ( $i == 1 && $dealer_hand->{hide_down_card} ) {
-            printf( '%s ', $game->{faces}[13][0] );
+            printf( '%s ', card_face($game, 13, 0));
         }
         else {
             my $card = $dealer_hand->{cards}[$i];
-            printf( '%s ', $game->{faces}[ $card->{value} ][ $card->{suit} ] );
+            printf( '%s ', card_face($game, $card->{value}, $card->{suit}));
         }
     }
 
@@ -191,7 +197,7 @@ sub draw_player_hand ( $game, $index ) {
 
     for ( my $i = 0 ; $i < scalar( @{ $player_hand->{cards} } ) ; ++$i ) {
         my $card = $player_hand->{cards}[$i];
-        printf( '%s ', $game->{faces}[ $card->{value} ][ $card->{suit} ] );
+        printf( '%s ', card_face($game, $card->{value}, $card->{suit}));
     }
 
     printf( ' ⇒  %u  ', hand_value( $player_hand, SOFT, PLAYER ) );
@@ -431,18 +437,34 @@ sub get_new_deck_type ($game) {
     bet_options($game);
 }
 
+sub get_new_face_type ($game) {
+    clear();
+    draw_hands($game);
+    print(" (1) 🂡  (2) A♠\n");
+
+    my $c = read_one_char(qr/[1-2]/);
+    $game->{face_type} = $c;
+
+    save_game($game);
+    draw_hands($game);
+    bet_options($game);
+}
+
 sub game_options ($game) {
     clear();
     draw_hands($game);
-    print(" (N) Number of Decks  (T) Deck Type  (B) Back\n");
+    print(" (N) Number of Decks  (T) Deck Type  (F) Face Type  (B) Back\n");
 
-    my $c = read_one_char(qr/[ntb]/);
+    my $c = read_one_char(qr/[ntfb]/);
 
     if ( $c eq 'n' ) {
         get_new_num_decks($game);
     }
     elsif ( $c eq 't' ) {
         get_new_deck_type($game);
+    }
+    elsif ( $c eq 'f' ) {
+        get_new_face_type($game);
     }
     elsif ( $c eq 'b' ) {
         clear();
@@ -690,8 +712,12 @@ sub deal_new_hand ($game) {
 
 sub save_game ($game) {
     open( my $fh, '>:encoding(UTF-8)', SAVE_FILE ) or die $!;
-    printf( $fh "%u\n%u\n%u\n%u\n",
-        $game->{num_decks}, $game->{money}, $game->{current_bet}, $game->{deck_type} );
+    printf( $fh "%u\n%u\n%u\n%u\n%u\n",
+            $game->{num_decks},
+            $game->{money},
+            $game->{current_bet},
+            $game->{deck_type},
+            $game->{face_type} );
     close($fh);
 }
 
@@ -713,6 +739,10 @@ sub load_game ($game) {
         chomp $line;
         $game->{deck_type} = int($line);
 
+        $line = <$fh>;
+        chomp $line;
+        $game->{face_type} = int($line);
+
         close($fh);
     }
 }
@@ -725,6 +755,7 @@ sub run {
         player_hands        => [],
         num_decks           => 8,
         deck_type           => 1,
+        face_type           => 1,
         money               => 10000,
         current_bet         => 500,
         current_player_hand => 0,
@@ -747,6 +778,22 @@ sub run {
             [ '🂭', '🂽', '🃍', '🃝' ],
             [ '🂮', '🂾', '🃎', '🃞' ],
             ['🂠']
+        ],
+        faces2 => [
+            ['A♠', 'A♥', 'A♣', 'A♦'],
+            ['2♠', '2♥', '2♣', '2♦'],
+            ['3♠', '3♥', '3♣', '3♦'],
+            ['4♠', '4♥', '4♣', '4♦'],
+            ['5♠', '5♥', '5♣', '5♦'],
+            ['6♠', '6♥', '6♣', '6♦'],
+            ['7♠', '7♥', '7♣', '7♦'],
+            ['8♠', '8♥', '8♣', '8♦'],
+            ['9♠', '9♥', '9♣', '9♦'],
+            ['T♠', 'T♥', 'T♣', 'T♦'],
+            ['J♠', 'J♥', 'J♣', 'J♦'],
+            ['Q♠', 'Q♥', 'Q♣', 'Q♦'],
+            ['K♠', 'K♥', 'K♣', 'K♦'],
+            ['??']
         ],
         deck_types => {
             1 => \&new_regular,
