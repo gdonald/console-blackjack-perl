@@ -167,7 +167,7 @@ sub clear {
 }
 
 sub card_face ( $game, $value, $suit ) {
-    return $game->{faces2}[$value][$suit] if ($game->{face_type} == 2);
+    return $game->{faces2}[$value][$suit] if ( $game->{face_type} == 2 );
 
     $game->{faces}[$value][$suit];
 }
@@ -179,11 +179,11 @@ sub draw_dealer_hand ($game) {
 
     for ( my $i = 0 ; $i < scalar( @{ $dealer_hand->{cards} } ) ; ++$i ) {
         if ( $i == 1 && $dealer_hand->{hide_down_card} ) {
-            printf( '%s ', card_face($game, 13, 0));
+            printf( '%s ', card_face( $game, 13, 0 ) );
         }
         else {
             my $card = $dealer_hand->{cards}[$i];
-            printf( '%s ', card_face($game, $card->{value}, $card->{suit}));
+            printf( '%s ', card_face( $game, $card->{value}, $card->{suit} ) );
         }
     }
 
@@ -197,7 +197,7 @@ sub draw_player_hand ( $game, $index ) {
 
     for ( my $i = 0 ; $i < scalar( @{ $player_hand->{cards} } ) ; ++$i ) {
         my $card = $player_hand->{cards}[$i];
-        printf( '%s ', card_face($game, $card->{value}, $card->{suit}));
+        printf( '%s ', card_face( $game, $card->{value}, $card->{suit} ) );
     }
 
     printf( ' ⇒  %u  ', hand_value( $player_hand, SOFT, PLAYER ) );
@@ -430,7 +430,7 @@ sub get_new_deck_type ($game) {
 
     my $c = read_one_char(qr/[1-6]/);
     $game->{deck_type} = $c;
-    $game->{deck_types}->{$game->{deck_type}}->($game);
+    $game->{deck_types}->{ $game->{deck_type} }->($game);
 
     save_game($game);
     draw_hands($game);
@@ -666,7 +666,8 @@ sub ask_insurance ($game) {
 }
 
 sub deal_new_hand ($game) {
-    $game->{deck_types}->{$game->{deck_type}}->($game) if ( need_to_shuffle($game) );
+    $game->{deck_types}->{ $game->{deck_type} }->($game)
+      if ( need_to_shuffle($game) );
 
     my %player_hand = (
         cards  => [],
@@ -713,11 +714,9 @@ sub deal_new_hand ($game) {
 sub save_game ($game) {
     open( my $fh, '>:encoding(UTF-8)', SAVE_FILE ) or die $!;
     printf( $fh "%u\n%u\n%u\n%u\n%u\n",
-            $game->{num_decks},
-            $game->{money},
-            $game->{current_bet},
-            $game->{deck_type},
-            $game->{face_type} );
+        $game->{num_decks}, $game->{money}, $game->{current_bet},
+        $game->{deck_type}, $game->{face_type}
+    );
     close($fh);
 }
 
@@ -780,19 +779,19 @@ sub run {
             ['🂠']
         ],
         faces2 => [
-            ['A♠', 'A♥', 'A♣', 'A♦'],
-            ['2♠', '2♥', '2♣', '2♦'],
-            ['3♠', '3♥', '3♣', '3♦'],
-            ['4♠', '4♥', '4♣', '4♦'],
-            ['5♠', '5♥', '5♣', '5♦'],
-            ['6♠', '6♥', '6♣', '6♦'],
-            ['7♠', '7♥', '7♣', '7♦'],
-            ['8♠', '8♥', '8♣', '8♦'],
-            ['9♠', '9♥', '9♣', '9♦'],
-            ['T♠', 'T♥', 'T♣', 'T♦'],
-            ['J♠', 'J♥', 'J♣', 'J♦'],
-            ['Q♠', 'Q♥', 'Q♣', 'Q♦'],
-            ['K♠', 'K♥', 'K♣', 'K♦'],
+            [ 'A♠', 'A♥', 'A♣', 'A♦' ],
+            [ '2♠', '2♥', '2♣', '2♦' ],
+            [ '3♠', '3♥', '3♣', '3♦' ],
+            [ '4♠', '4♥', '4♣', '4♦' ],
+            [ '5♠', '5♥', '5♣', '5♦' ],
+            [ '6♠', '6♥', '6♣', '6♦' ],
+            [ '7♠', '7♥', '7♣', '7♦' ],
+            [ '8♠', '8♥', '8♣', '8♦' ],
+            [ '9♠', '9♥', '9♣', '9♦' ],
+            [ 'T♠', 'T♥', 'T♣', 'T♦' ],
+            [ 'J♠', 'J♥', 'J♣', 'J♦' ],
+            [ 'Q♠', 'Q♥', 'Q♣', 'Q♦' ],
+            [ 'K♠', 'K♥', 'K♣', 'K♦' ],
             ['??']
         ],
         deck_types => {
