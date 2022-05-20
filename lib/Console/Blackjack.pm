@@ -2,9 +2,9 @@
 package Console::Blackjack;
 
 use v5.20;
-use experimental qw(signatures);
 use strict;
 use warnings FATAL => 'all';
+use experimental qw(signatures);
 
 use utf8;
 use open ':std', ':encoding(UTF-8)';
