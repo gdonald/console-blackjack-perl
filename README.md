@@ -1,6 +1,8 @@
 # console-blackjack-perl
 
-![Blackjack](https://raw.githubusercontent.com/gdonald/console-blackjack-perl/master/bj.png)
+![Blackjack](https://raw.githubusercontent.com/gdonald/console-blackjack-perl/master/ss2.png)
+
+![Blackjack](https://raw.githubusercontent.com/gdonald/console-blackjack-perl/master/ss1.png)
 
 ## Run
 
