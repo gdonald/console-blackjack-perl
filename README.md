@@ -4,9 +4,23 @@
 
 ![Blackjack](https://raw.githubusercontent.com/gdonald/console-blackjack-perl/master/ss1.png)
 
-## Run
+## Install from CPAN
 
-    ./console-blackjack.pl
+    cpanm Console::Blackjack
+
+### Run
+
+    console-blackjack.pl
+
+## Install from Github
+
+    git clone https://github.com/gdonald/console-blackjack-perl.git
+   
+### Run
+
+    cd console-blackjack-perl/Console-Blackjack
+
+    perl -Ilib script/console-blackjack.pl
 
 ## License
 

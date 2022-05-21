@@ -1,4 +1,3 @@
-
 package Console::Blackjack;
 
 use v5.20;
@@ -10,8 +9,63 @@ use utf8;
 use open ':std', ':encoding(UTF-8)';
 use Storable qw(dclone);
 
-use base 'Exporter';
-our @EXPORT = qw(run);
+=head1 NAME
+
+Console::Blackjack - A console-based implementation of Blackjack
+
+=head1 VERSION
+
+Version 0.01
+
+=cut
+
+our $VERSION = '0.01';
+
+=head1 SYNOPSIS
+
+This module lets you play Blackjack in your console.
+
+    console-blackjack.pl
+
+=cut
+
+=head1 AUTHOR
+
+Greg Donald, C<< <gdonald at gmail.com> >>
+
+=head1 BUGS
+
+Please report any bugs or feature requests at https://github.com/gdonald/console-blackjack-perl/issues.
+
+=head1 SUPPORT
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc Console::Blackjack
+
+You can also look for information at:
+
+=over 4
+
+=item * CPAN Ratings
+
+L<https://cpanratings.perl.org/d/Console-Blackjack>
+
+=item * Search CPAN
+
+L<https://metacpan.org/release/Console-Blackjack>
+
+=back
+
+=head1 LICENSE AND COPYRIGHT
+
+This software is Copyright (c) 2022 by Greg Donald.
+
+This is free software, licensed under:
+
+  The Artistic License 2.0 (GPL Compatible)
+
+=cut
 
 use constant {
     SAVE_FILE        => 'bj.txt',
@@ -440,7 +494,7 @@ sub get_new_deck_type ($game) {
 sub get_new_face_type ($game) {
     clear();
     draw_hands($game);
-    print(" (1) 🂡  (2) A♠\n");
+    print(" (1) A♠  (2) 🂡\n");
 
     my $c = read_one_char(qr/[1-2]/);
     $game->{face_type} = $c;
@@ -763,22 +817,6 @@ sub run {
             [ 84, 4 ], [ 82, 3 ], [ 81, 2 ], [ 80, 1 ]
         ],
         faces => [
-            [ '🂡', '🂱', '🃁', '🃑' ],
-            [ '🂢', '🂲', '🃂', '🃒' ],
-            [ '🂣', '🂳', '🃃', '🃓' ],
-            [ '🂤', '🂴', '🃄', '🃔' ],
-            [ '🂥', '🂵', '🃅', '🃕' ],
-            [ '🂦', '🂶', '🃆', '🃖' ],
-            [ '🂧', '🂷', '🃇', '🃗' ],
-            [ '🂨', '🂸', '🃈', '🃘' ],
-            [ '🂩', '🂹', '🃉', '🃙' ],
-            [ '🂪', '🂺', '🃊', '🃚' ],
-            [ '🂫', '🂻', '🃋', '🃛' ],
-            [ '🂭', '🂽', '🃍', '🃝' ],
-            [ '🂮', '🂾', '🃎', '🃞' ],
-            ['🂠']
-        ],
-        faces2 => [
             [ 'A♠', 'A♥', 'A♣', 'A♦' ],
             [ '2♠', '2♥', '2♣', '2♦' ],
             [ '3♠', '3♥', '3♣', '3♦' ],
@@ -793,6 +831,22 @@ sub run {
             [ 'Q♠', 'Q♥', 'Q♣', 'Q♦' ],
             [ 'K♠', 'K♥', 'K♣', 'K♦' ],
             ['??']
+        ],
+        faces2 => [
+            [ '🂡', '🂱', '🃁', '🃑' ],
+            [ '🂢', '🂲', '🃂', '🃒' ],
+            [ '🂣', '🂳', '🃃', '🃓' ],
+            [ '🂤', '🂴', '🃄', '🃔' ],
+            [ '🂥', '🂵', '🃅', '🃕' ],
+            [ '🂦', '🂶', '🃆', '🃖' ],
+            [ '🂧', '🂷', '🃇', '🃗' ],
+            [ '🂨', '🂸', '🃈', '🃘' ],
+            [ '🂩', '🂹', '🃉', '🃙' ],
+            [ '🂪', '🂺', '🃊', '🃚' ],
+            [ '🂫', '🂻', '🃋', '🃛' ],
+            [ '🂭', '🂽', '🃍', '🃝' ],
+            [ '🂮', '🂾', '🃎', '🃞' ],
+            ['🂠']
         ],
         deck_types => {
             1 => \&new_regular,
@@ -812,4 +866,4 @@ sub run {
     }
 }
 
-1;
+1; # End of Console::Blackjack
