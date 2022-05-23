@@ -20,6 +20,6 @@ provides:
 requires:
   Storable: '3.25'
 resources:
-  license: http://opensource.org/licenses/artistic-license-2.0.php
+  license: http://www.perlfoundation.org/artistic_license_2_0
 version: '0.02'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
