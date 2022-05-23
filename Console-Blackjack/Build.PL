@@ -18,7 +18,7 @@ my $builder = Module::Build->new(
         'Test::More' => '0',
     },
     requires => {
-        'Storable' => '3.26',
+        'Storable' => '3.25',
     },
     add_to_cleanup     => [ 'Console-Blackjack-*' ],
 );

@@ -2,7 +2,7 @@ Build.PL
 Changes
 lib/Console/Blackjack.pm
 script/console-blackjack.pl
-MANIFEST			This list of files
+MANIFEST
 README
 t/00-load.t
 t/manifest.t

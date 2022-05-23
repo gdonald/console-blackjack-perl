@@ -21,7 +21,7 @@
       },
       "runtime" : {
          "requires" : {
-            "Storable" : "3.26"
+            "Storable" : "3.25"
          }
       },
       "test" : {
@@ -33,15 +33,15 @@
    "provides" : {
       "Console::Blackjack" : {
          "file" : "lib/Console/Blackjack.pm",
-         "version" : "0.01"
+         "version" : "0.02"
       }
    },
    "release_status" : "stable",
    "resources" : {
       "license" : [
-         "http://www.perlfoundation.org/artistic_license_2_0"
+         "http://opensource.org/licenses/artistic-license-2.0.php"
       ]
    },
-   "version" : "0.01",
-   "x_serialization_backend" : "JSON::PP version 4.07"
+   "version" : "0.02",
+   "x_serialization_backend" : "JSON::PP version 4.06"
 }

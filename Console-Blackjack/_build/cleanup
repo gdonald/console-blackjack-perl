@@ -1,6 +1,6 @@
 do{ my $x = {
        'Console-Blackjack-*' => 1,
-       'Console-Blackjack-0.01' => 1,
+       'Console-Blackjack-0.02' => 1,
        'blib' => 1
      };
 $x; }

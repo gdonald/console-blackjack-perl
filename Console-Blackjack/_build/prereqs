@@ -3,7 +3,7 @@ do{ my $x = {
        'conflicts' => {},
        'recommends' => {},
        'requires' => {
-                       'Storable' => '3.26'
+                       'Storable' => '3.25'
                      },
        'test_requires' => {
                             'Test::More' => '0'
