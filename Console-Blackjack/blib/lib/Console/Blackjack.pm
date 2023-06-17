@@ -369,7 +369,7 @@ sub insure_hand ($game) {
 
     $player_hand->{bet} /= 2;
     $player_hand->{played} = 1;
-    $player_hand->{payed}  = 1;
+    $player_hand->{paid}  = 1;
     $player_hand->{status} = LOST;
     $game->{money} -= $player_hand->{bet};
 
@@ -388,8 +388,8 @@ sub player_is_done ( $game, $player_hand ) {
 
         $player_hand->{played} = 1;
 
-        if ( !$player_hand->{payed} && player_is_busted($player_hand) ) {
-            $player_hand->{payed}  = 1;
+        if ( !$player_hand->{paid} && player_is_busted($player_hand) ) {
+            $player_hand->{paid}  = 1;
             $player_hand->{status} = LOST;
             $game->{money} -= $player_hand->{bet};
         }
@@ -420,8 +420,8 @@ sub pay_hands ($game) {
     for ( my $x = 0 ; $x < scalar( @{ $game->{player_hands} } ) ; ++$x ) {
         my $player_hand = $game->{player_hands}[$x];
 
-        next if ( $player_hand->{payed} );
-        $player_hand->{payed} = 1;
+        next if ( $player_hand->{paid} );
+        $player_hand->{paid} = 1;
 
         my $phv = hand_value( $player_hand, SOFT, PLAYER );
 
@@ -639,7 +639,7 @@ sub player_split ($game) {
         bet    => $game->{current_bet},
         stood  => 0,
         played => 0,
-        payed  => 0,
+        paid  => 0,
         status => 0
     );
     my $hand_count = scalar( @{ $game->{player_hands} } );
@@ -728,7 +728,7 @@ sub deal_new_hand ($game) {
         bet    => $game->{current_bet},
         stood  => 0,
         played => 0,
-        payed  => 0,
+        paid  => 0,
         status => 0
     );
     my %dealer_hand = ( cards => [], hide_down_card => 1 );
